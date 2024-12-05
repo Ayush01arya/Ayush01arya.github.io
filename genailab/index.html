@@ -1,0 +1,545 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+		<title>GEyan</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@48,400,1,0" />
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #E3F2FD;
+}
+
+.chatbot-toggler {
+  position: fixed;
+  bottom: 30px;
+  right: 35px;
+  outline: none;
+  border: none;
+  height: 50px;
+  width: 50px;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #724ae8;
+  transition: all 0.2s ease;
+}
+
+body.show-chatbot .chatbot-toggler {
+  transform: rotate(90deg);
+}
+
+.chatbot-toggler span {
+  color: #fff;
+  position: absolute;
+}
+
+.chatbot-toggler span:last-child,
+body.show-chatbot .chatbot-toggler span:first-child  {
+  opacity: 0;
+}
+
+body.show-chatbot .chatbot-toggler span:last-child {
+  opacity: 1;
+}
+
+.chatbot {
+  position: fixed;
+  right: 35px;
+  bottom: 90px;
+  width: 420px;
+  background: #fff;
+  border-radius: 15px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.5);
+  transform-origin: bottom right;
+  box-shadow: 0 0 128px 0 rgba(0,0,0,0.1),
+              0 32px 64px -48px rgba(0,0,0,0.5);
+  transition: all 0.1s ease;
+}
+
+body.show-chatbot .chatbot {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.chatbot header {
+  padding: 16px 0;
+  position: relative;
+  text-align: center;
+  color: #fff;
+  background: #724ae8;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.chatbot header span {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  display: none;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+header h2 {
+  font-size: 1.4rem;
+}
+
+.chatbot .chatbox {
+  overflow-y: auto;
+  height: 510px;
+  padding: 30px 20px 100px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-track {
+  background: #fff;
+  border-radius: 25px;
+}
+
+.chatbot :where(.chatbox, textarea)::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 25px;
+}
+
+.chatbox .chat {
+  display: flex;
+  list-style: none;
+}
+
+.chatbox .outgoing {
+  margin: 20px 0;
+  justify-content: flex-end;
+}
+
+.chatbox .incoming span {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  cursor: default;
+  text-align: center;
+  line-height: 32px;
+  align-self: flex-end;
+  background: #724ae8;
+  border-radius: 4px;
+  margin: 0 10px 7px 0;
+}
+
+.chatbox .chat p {
+  white-space: pre-wrap;
+  padding: 12px 16px;
+  border-radius: 10px 10px 0 10px;
+  max-width: 75%;
+  color: #fff;
+  font-size: 0.95rem;
+  background: #724ae8;
+}
+
+.chatbox .incoming p {
+  border-radius: 10px 10px 10px 0;
+}
+
+.chatbox .chat p.error {
+  color: #721c24;
+  background: #f8d7da;
+}
+
+.chatbox .incoming p {
+  color: #000;
+  background: #f2f2f2;
+}
+
+.chatbot .chat-input {
+  display: flex;
+  gap: 5px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  padding: 3px 20px;
+  border-top: 1px solid #ddd;
+}
+
+.chat-input textarea {
+  height: 55px;
+  width: 100%;
+  border: none;
+  outline: none;
+  resize: none;
+  max-height: 180px;
+  padding: 15px 15px 15px 0;
+  font-size: 0.95rem;
+}
+
+.chat-input span {
+  align-self: flex-end;
+  color: #724ae8;
+  cursor: pointer;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  visibility: hidden;
+  font-size: 1.35rem;
+}
+
+.chat-input textarea:valid ~ span {
+  visibility: visible;
+}
+
+.suggestion-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 10px;
+  max-height: 150px; /* Set a maximum height for the container */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.suggestion-container::-webkit-scrollbar {
+  width: 6px; /* For Webkit browsers */
+}
+
+.suggestion-container::-webkit-scrollbar-thumb {
+  background-color: #00aaff;
+  border-radius: 10px;
+}
+
+.suggestion-container::-webkit-scrollbar-track {
+  background: #ffffff;
+  border-radius: 10px;
+}
+
+.suggestion-btn {
+  background: none;
+  color: #00aaff;
+  border: 1px solid #00aaff;
+  border-radius: 5px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  font-family: Arial, sans-serif;
+  margin: 5px;
+  flex: 1 1 calc(33% - 10px); /* Adjusts buttons to fit three per row */
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.suggestion-btn:hover {
+  background-color: #00aaff;
+  color: #fff;
+}
+
+@media (max-width: 490px) {
+  .suggestion-btn {
+    font-size: 12px;
+    padding: 6px 8px;
+    margin: 3px;
+    flex: 1 1 calc(33% - 10px); /* Keeps three per row even on smaller screens */
+  }
+}
+
+@media (max-width: 320px) {
+  .suggestion-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+    margin: 3px;
+    flex: 1 1 calc(100% - 10px); /* Adjusts buttons to fit one per row on very small screens */
+  }
+}
+
+.phone-input-container {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-top: 1px solid #ddd;
+}
+
+#phone-number {
+  width: calc(100% - 22px); /* Adjust width to fit within the chatbox */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 16px;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+  margin-top: 10px;
+}
+
+#phone-number:focus {
+  border-color: #007bff;
+}
+
+@media (max-width: 490px) {
+  .chatbot-toggler {
+    right: 20px;
+    bottom: 20px;
+  }
+  .chatbot {
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    border-radius: 0;
+    width: 100%;
+  }
+  .chatbot .chatbox {
+    height: 90%;
+    padding: 25px 15px 100px;
+  }
+  .chatbot .chat-input {
+    padding: 5px 15px;
+  }
+  .chatbot header span {
+    display: block;
+  }
+}
+/* Typing Effect */
+.typing {
+  display: flex;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.typing span {
+  width: 8px;
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+  animation: typing 1.5s infinite;
+}
+
+.typing span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.typing span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes typing {
+  0% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+}
+/* Additional styling for typing effect */
+    .typing-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #ccc;
+      border-radius: 50%;
+      margin-left: 2px;
+      animation: typing 1.5s infinite;
+    }
+    .typing-indicator:nth-child(2) {
+      animation-delay: 0.3s;
+    }
+    .typing-indicator:nth-child(3) {
+      animation-delay: 0.6s;
+    }
+
+    @keyframes typing {
+      0%, 100% {
+        opacity: 0.2;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+</style>
+</head>
+
+
+
+
+
+
+  <button class="chatbot-toggler">
+    <span class="material-symbols-rounded">mode_comment</span>
+    <span class="material-symbols-outlined">close</span>
+  </button>
+  <div class="chatbot">
+    <header><h6 style=" margin-left: 280px;  z-index: -1;">Bot</h6>
+
+       <h2 style="color:white;">Graphic Era Hill University</h2>
+
+
+      <span class="close-btn material-symbols-outlined">close</span>
+    </header>
+    <ul class="chatbox">
+      <!-- Suggestion container added here -->
+      <div class="suggestion-container"></div>
+    </ul>
+    <div class="chat-input">
+      <textarea id="message-input" placeholder="Enter a message..." spellcheck="false" required></textarea>
+      <span id="send-btn" class="material-symbols-rounded">send</span>
+    </div>
+  </div>
+ <script>
+    const chatbotToggler = document.querySelector(".chatbot-toggler");
+    const closeBtn = document.querySelector(".close-btn");
+    const chatbox = document.querySelector(".chatbox");
+    const messageInput = document.getElementById("message-input");
+    const sendChatBtn = document.getElementById("send-btn");
+    const suggestionContainer = document.querySelector(".suggestion-container");
+
+    // Array of science facts
+
+
+    const createChatLi = (message, className, isSuggestion = false) => {
+        const chatLi = document.createElement("li");
+        chatLi.classList.add("chat", className);
+        let chatContent = '';
+
+        if (isSuggestion && className === "incoming") {
+            chatContent = `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="suggestion-container">`;
+            message.forEach(suggestion => {
+                chatContent += `<button class="suggestion-btn">${suggestion}</button>`;
+            });
+            chatContent += `</div>`;
+        } else {
+            chatContent = className === "outgoing" ? `<p>${message}</p>` : `<span class="material-symbols-outlined">smart_toy</span><p>${message}</p>`;
+        }
+
+        chatLi.innerHTML = chatContent;
+        return chatLi;
+    };
+
+    const createTypingIndicator = () => {
+        const typingLi = document.createElement("li");
+        typingLi.classList.add("chat", "incoming");
+        typingLi.innerHTML = `
+            <span class="material-symbols-outlined">smart_toy</span>
+            <div class="typing-indicator"></div>
+            <div class="typing-indicator"></div>
+            <div class="typing-indicator"></div>
+        `;
+        return typingLi;
+    };
+
+    const sendMessageToFlask = (message) => {
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ message: message })
+        };
+
+        return fetch('https://chattv.vercel.app/api/generate-response', requestOptions)
+            .then(response => response.json())
+            .catch(error => console.error('Error:', error));
+    };
+
+    const handleChat = (message = null) => {
+        const userMessage = message || messageInput.value.trim();
+        if (!userMessage) return;
+
+        messageInput.value = "";
+
+        chatbox.appendChild(createChatLi(userMessage, "outgoing"));
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
+        // Show typing indicator before the bot replies
+        const typingIndicator = createTypingIndicator();
+        chatbox.appendChild(typingIndicator);
+        chatbox.scrollTo(0, chatbox.scrollHeight);
+
+        sendMessageToFlask(userMessage).then(data => {
+            // Remove typing indicator after a delay
+            setTimeout(() => {
+                chatbox.removeChild(typingIndicator);
+
+                if (data && data.reply) {
+                    chatbox.appendChild(createChatLi(data.reply, "incoming"));
+
+                    if (data.buttons) {
+                        const suggestions = data.buttons.map(button => button.text);
+                        chatbox.appendChild(createChatLi(suggestions, "incoming", true));
+                    }
+                } else {
+                    chatbox.appendChild(createChatLi("Failed to get response from the server. Please try again later.", "incoming"));
+                }
+
+                chatbox.scrollTo(0, chatbox.scrollHeight);
+            }, 2000); // 2-second delay for the typing effect
+        }).catch(() => {
+            chatbox.removeChild(typingIndicator);
+            chatbox.appendChild(createChatLi("Failed to connect to the server. Please check your internet connection.", "incoming"));
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+        });
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+
+        // Display a random science fact after a delay
+        setTimeout(() => {
+//            const randomFact = scienceFacts[Math.floor(Math.random() * scienceFacts.length)];
+            chatbox.appendChild(createChatLi("Welcome to our chatbot! How can I assist you today?<br><br>", "incoming"));
+            const suggestions = ["Welcome To GEHU ", "Why GEHU", "Contact us"];
+            chatbox.appendChild(createChatLi(suggestions, "incoming", true));
+            chatbox.scrollTo(0, chatbox.scrollHeight);
+        }, 20); // 2-second delay
+
+        messageInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleChat();
+            }
+        });
+    });
+
+    sendChatBtn.addEventListener("click", () => handleChat());
+
+    closeBtn.addEventListener("click", () => document.body.classList.remove("show-chatbot"));
+
+    chatbotToggler.addEventListener("click", () => document.body.classList.toggle("show-chatbot"));
+
+    chatbox.addEventListener("click", (e) => {
+        if (e.target.classList.contains("suggestion-btn")) {
+            handleChat(e.target.textContent);
+        }
+    });
+ </script>
+
+
+
+
+
+
+</html>
